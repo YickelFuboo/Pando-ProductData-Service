@@ -7,7 +7,7 @@ from app.domains.scene_mgmt.schemes.scene_mgmt import CreateScene,CreateSceneFlo
 from app.domains.scene_mgmt.services.scene_mgmt import SceneMgmtService
 
 
-router=APIRouter(prefix="/scenes",tags=["场景管理"])
+router=APIRouter()
 
 
 @router.get("/flow-types")

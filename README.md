@@ -1,1 +1,0 @@
-# pando-product-mgmt-service

@@ -9,7 +9,7 @@ from app.domains.git_auth_mgmt.schemes.git_auth_mgmt import (
 )
 from app.domains.git_auth_mgmt.services.git_auth_mgmt_service import GitAuthMgmtService
 
-router = APIRouter(prefix="/git_auth", tags=["Git鉴权配置"])
+router = APIRouter()
 
 
 @router.post("/{provider}", response_model=GitAuthResponse)

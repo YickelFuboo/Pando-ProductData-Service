@@ -15,7 +15,7 @@ from app.domains.arch_mgmt.schemes.deployment import (
 )
 from app.domains.arch_mgmt.services import DeploymentService
 
-router = APIRouter(prefix="/arch", tags=["部署视图"])
+router = APIRouter()
 
 
 @router.get("/deployment-unit-types")

@@ -18,7 +18,12 @@ from app.infrastructure.redis import REDIS_CONN
 from app.utils.auth.jwt_middleware import jwt_middleware
 from app.domains.product_mgmt import product_router
 from app.domains.git_auth_mgmt import git_auth_router
-from app.domains.arch_mgmt import arch_mgmt_router
+from app.domains.arch_mgmt.api.architecture import router as architecture_router
+from app.domains.arch_mgmt.api.interfaces import router as interfaces_router
+from app.domains.arch_mgmt.api.build import router as build_router
+from app.domains.arch_mgmt.api.deployment import router as deployment_router
+from app.domains.arch_mgmt.api.decision import router as decision_router
+from app.domains.arch_mgmt.api.arch_doc import router as arch_doc_router
 from app.domains.scene_mgmt import scene_mgmt_router
 from app.domains.kb_mgmt import kb_mgmt_router
 
@@ -46,11 +51,16 @@ setup_logging()
 #==================================
 # 注册所有路由器
 #==================================
-app.include_router(product_router, prefix="/api/v1", tags=["产品管理"])
-app.include_router(git_auth_router, prefix="/api/v1", tags=["Git认证管理"])
-app.include_router(arch_mgmt_router, prefix="/api/v1", tags=["架构管理"])
-app.include_router(scene_mgmt_router, prefix="/api/v1", tags=["场景管理"])
-app.include_router(kb_mgmt_router, prefix="/api/v1", tags=["知识库管理"])
+app.include_router(product_router, prefix="/api/v1/products", tags=["产品与版本管理"])
+app.include_router(git_auth_router, prefix="/api/v1/git_auth", tags=["Git鉴权配置"])
+app.include_router(architecture_router, prefix="/api/v1/arch", tags=["逻辑架构视图"])
+app.include_router(interfaces_router, prefix="/api/v1/arch", tags=["接口视图"])
+app.include_router(build_router, prefix="/api/v1/arch", tags=["构建视图"])
+app.include_router(deployment_router, prefix="/api/v1/arch", tags=["部署视图"])
+app.include_router(decision_router, prefix="/api/v1/arch", tags=["架构决策"])
+app.include_router(arch_doc_router, prefix="/api/v1/arch", tags=["架构文档"])
+app.include_router(scene_mgmt_router, prefix="/api/v1/scenes", tags=["场景管理"])
+app.include_router(kb_mgmt_router, prefix="/api/v1/kb-mgmt", tags=["知识库管理"])
 
 #==================================
 # 配置中间件

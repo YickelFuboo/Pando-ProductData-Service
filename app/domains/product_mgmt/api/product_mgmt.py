@@ -13,10 +13,10 @@ from app.domains.product_mgmt.schemes.product_mgmt import (
 from app.domains.product_mgmt.services.product_mgmt import ProductMgmtService
 
 
-product_router = APIRouter(prefix="/products", tags=["产品与版本管理"])
+router = APIRouter()
 
 
-@product_router.post("", response_model=ProductInfo)
+@router.post("", response_model=ProductInfo)
 async def create_product(
     data: CreateProduct,
     user_id: str = Query(..., description="用户ID"),
@@ -33,7 +33,7 @@ async def create_product(
         )
 
 
-@product_router.get("/list")
+@router.get("/list")
 async def get_product_list(
     user_id: str = Query(..., description="用户ID"),
     page: int = Query(1, ge=1, description="页码"),
@@ -61,7 +61,7 @@ async def get_product_list(
         )
 
 
-@product_router.get("/{product_id}", response_model=ProductInfo)
+@router.get("/{product_id}", response_model=ProductInfo)
 async def get_product(
     product_id: str,
     user_id: str = Query(..., description="用户ID"),
@@ -84,7 +84,7 @@ async def get_product(
         )
 
 
-@product_router.put("/{product_id}", response_model=ProductInfo)
+@router.put("/{product_id}", response_model=ProductInfo)
 async def update_product(
     product_id: str,
     data: UpdateProduct,
@@ -108,7 +108,7 @@ async def update_product(
         )
 
 
-@product_router.delete("/{product_id}")
+@router.delete("/{product_id}")
 async def delete_product(
     product_id: str,
     user_id: str = Query(..., description="用户ID"),
@@ -131,7 +131,7 @@ async def delete_product(
         )
 
 
-@product_router.post("/versions", response_model=VersionInfo)
+@router.post("/versions", response_model=VersionInfo)
 async def create_version(
     data: CreateVersion,
     user_id: str = Query(..., description="用户ID"),
@@ -150,7 +150,7 @@ async def create_version(
         )
 
 
-@product_router.get("/versions/{version_id}", response_model=VersionInfo)
+@router.get("/versions/{version_id}", response_model=VersionInfo)
 async def get_version(
     version_id: str,
     user_id: str = Query(..., description="用户ID"),
@@ -173,7 +173,7 @@ async def get_version(
         )
 
 
-@product_router.put("/versions/{version_id}", response_model=VersionInfo)
+@router.put("/versions/{version_id}", response_model=VersionInfo)
 async def update_version(
     version_id: str,
     data: UpdateVersion,
@@ -197,7 +197,7 @@ async def update_version(
         )
 
 
-@product_router.delete("/versions/{version_id}")
+@router.delete("/versions/{version_id}")
 async def delete_version(
     version_id: str,
     user_id: str = Query(..., description="用户ID"),

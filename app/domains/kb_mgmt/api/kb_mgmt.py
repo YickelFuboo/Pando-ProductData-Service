@@ -5,8 +5,7 @@ from app.domains.kb_mgmt.schemes.kb_mgmt import CreateVersionKb,UpdateVersionKb,
 from app.domains.kb_mgmt.services.kb_mgmt_service import KbMgmtService
 
 
-router=APIRouter(prefix="/kb-mgmt",tags=["知识库管理"])
-kb_mgmt_router=router
+router=APIRouter()
 
 
 @router.get("/categories")

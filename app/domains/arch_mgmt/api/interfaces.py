@@ -17,7 +17,7 @@ from app.domains.arch_mgmt.schemes.interfaces import (
 )
 from app.domains.arch_mgmt.services import InterfacesService
 
-router = APIRouter(prefix="/arch", tags=["接口视图"])
+router = APIRouter()
 
 
 @router.get("/interface-categories")
