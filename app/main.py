@@ -10,10 +10,8 @@ from fastapi.responses import JSONResponse
 from app.logger import set_log_level, setup_logging
 from app.config.settings import settings, APP_NAME, APP_VERSION, APP_DESCRIPTION
 from app.middleware.logging import logging_middleware
-from app.infrastructure.celery.app import celery_app
 from app.infrastructure.database import close_db, health_check_db
 from app.infrastructure.storage import STORAGE_CONN
-from app.infrastructure.vector_store import VECTOR_STORE_CONN
 from app.infrastructure.redis import REDIS_CONN
 from app.utils.auth.jwt_middleware import jwt_middleware
 from app.domains.product_mgmt import product_router
@@ -80,15 +78,6 @@ app.add_middleware(logging_middleware)
 # 添加JWT中间件到应用
 #app.middleware("http")(jwt_middleware)
 
-def run_celery_worker():
-    """在独立线程中运行 Celery Worker"""
-    try:
-        # 在debug模式下使用debug日志级别，否则使用info
-        log_level = 'debug' if settings.debug else 'info'
-        celery_app.worker_main(['worker', f'--loglevel={log_level}', '--concurrency=1', '-Q', 'document,default'])
-    except Exception as e:
-        logging.error(f"Celery Worker 启动失败: {e}")
-
 #==================================
 # 初始化基础设施
 #==================================
@@ -97,20 +86,6 @@ async def startup_event():
     """应用启动时初始化"""
     try:      
         logging.info("开始应用启动流程...")
-        
-        # 在debug模式下启动Celery Worker
-        """ if settings.debug:
-            logging.info("🔧 开发模式：准备启动 Celery Worker...")
-            try:
-                t = threading.Thread(target=run_celery_worker, daemon=True)
-                t.start()
-                await asyncio.sleep(0.1)
-                logging.info("✅ Celery Worker 已在后台线程启动（开发模式）")
-            except Exception as worker_error:
-                logging.warning(f"⚠️ Celery Worker 启动失败，但不影响主应用: {worker_error}")
-        else:
-            logging.info("🏭 生产模式：跳过 Celery Worker 启动")
-        """
 
         logging.info(f"{APP_NAME} v{APP_VERSION} 启动成功")
 
@@ -132,14 +107,6 @@ async def shutdown_event():
             except Exception as e:
                 logging.warning(f"关闭存储连接时出错: {e}")
         logging.info("存储连接已关闭")
-
-        # 关闭向量存储连接
-        if VECTOR_STORE_CONN and hasattr(VECTOR_STORE_CONN, 'close'):
-            try:
-                await VECTOR_STORE_CONN.close()
-            except Exception as e:
-                logging.warning(f"关闭向量存储连接时出错: {e}")
-        logging.info("向量存储连接已关闭")
 
         # 关闭Redis连接
         if REDIS_CONN and hasattr(REDIS_CONN, 'close'):
@@ -191,12 +158,6 @@ async def health_check():
             storage_healthy = await STORAGE_CONN.health_check()
         health_status["storage"] = "healthy" if storage_healthy else "unhealthy"
         
-        # 检查向量存储连接健康状态
-        vector_healthy = False
-        if VECTOR_STORE_CONN and hasattr(VECTOR_STORE_CONN, 'health_check'):
-            vector_healthy = await VECTOR_STORE_CONN.health_check()
-        health_status["vector_store"] = "healthy" if vector_healthy else "unhealthy"
-        
         # 检查Redis连接健康状态
         redis_healthy = False
         if REDIS_CONN and hasattr(REDIS_CONN, 'health_check'):
@@ -204,7 +165,7 @@ async def health_check():
         health_status["redis"] = "healthy" if redis_healthy else "unhealthy"
         
         # 如果任何服务不健康，整体状态设为不健康
-        if not db_healthy or not storage_healthy or not vector_healthy or not redis_healthy:
+        if not db_healthy or not storage_healthy or not redis_healthy:
             health_status["status"] = "unhealthy"
                 
         return health_status

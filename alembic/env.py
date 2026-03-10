@@ -77,7 +77,17 @@ def _build_database_url() -> str:
         host = q(_get("MYSQL_HOST", "localhost"))
         port = _get("MYSQL_PORT", "3306")
         return f"mysql+pymysql://{user}:{password}@{host}:{port}/{q(db_name)}"
-    return "sqlite:///./product_data.db"
+    # SQLite：优先使用 SQLITE_PATH，默认 ./data/pando_productdata_service.db，相对于项目根目录
+    raw_path = _get("SQLITE_PATH", "./data/pando_productdata_service.db") or "./data/pando_productdata_service.db"
+    if not os.path.isabs(raw_path):
+        norm_path = os.path.normpath(os.path.join(_PROJECT_ROOT, raw_path))
+    else:
+        norm_path = os.path.normpath(raw_path)
+    parent_dir = os.path.dirname(norm_path)
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
+    norm_path = norm_path.replace("\\", "/")
+    return f"sqlite:///{norm_path}"
 
 
 database_url = os.environ.get("ALEMBIC_DATABASE_URL") or _build_database_url()

@@ -40,10 +40,12 @@ AUTH_BLACKLIST_ENDPOINT=/blacklist
 # =============================================================================
 # ========================数据库配置========================
 # 数据库名称
-DB_NAME=ml_productdata_service
+DB_NAME=pando_productdata_service
 
-# 数据库类型: postgresql 或 mysql
-DATABASE_TYPE=postgresql
+# 数据库类型: postgresql/mysql/sqlite
+DATABASE_TYPE=sqlite
+# SQLite 配置 (如果使用SQLite)
+SQLITE_PATH=./data/pando_productdata_service.db
 # 数据库连接池配置
 DB_POOL_SIZE=10
 DB_MAX_OVERFLOW=20
@@ -74,7 +76,7 @@ REDIS_MAX_CONNECTIONS=10
 
 # ========================文件存储配置========================
 # 存储类型: minio, s3, local, azure_sas
-STORAGE_TYPE=minio
+STORAGE_TYPE=local
 
 # MinIO 配置 (推荐用于开发环境)
 MINIO_ENDPOINT=localhost:9000
@@ -89,8 +91,8 @@ S3_ACCESS_KEY_ID=your_access_key
 S3_SECRET_ACCESS_KEY=your_secret_key
 S3_USE_SSL=false
 
-# 本地存储配置 (简单文件存储)
-LOCAL_UPLOAD_DIR=./uploads
+# 本地存储配置 (简单文件存储，不指定则使用默认目录data/upload_files)
+LOCAL_UPLOAD_DIR=./data/upload_files
 
 # Azure Blob Storage SAS配置
 AZURE_ACCOUNT_URL=https://yourstorageaccount.blob.core.windows.net

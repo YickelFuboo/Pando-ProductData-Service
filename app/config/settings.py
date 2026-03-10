@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from pydantic_settings import BaseSettings
 from pydantic import Field
-from app.utils.common import get_project_meta, get_project_base_directory
+from app.utils.common import get_project_meta
 
 
 # 定义全局配置常量
@@ -11,7 +11,7 @@ APP_NAME = _meta["name"]
 APP_VERSION = _meta["version"]
 APP_DESCRIPTION = _meta["description"]
 
-PROJECT_BASE_DIR = get_project_base_directory()
+PROJECT_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class Settings(BaseSettings):
     """应用配置类 - 平铺结构"""
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     
     # 数据库配置
     db_name: str = Field(default="knowledge_service", description="数据库名称", env="DB_NAME")
-    database_type: str = Field(default="postgresql", description="数据库类型: postgresql 或 mysql", env="DATABASE_TYPE")
+    database_type: str = Field(default="postgresql", description="数据库类型: postgresql/mysql/sqlite", env="DATABASE_TYPE")
     db_pool_size: int = Field(default=10, description="连接池大小", env="DB_POOL_SIZE")
     db_max_overflow: int = Field(default=20, description="最大溢出连接数", env="DB_MAX_OVERFLOW")
     
@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     mysql_port: int = Field(default=3306, description="MySQL端口", env="MYSQL_PORT")
     mysql_user: str = Field(default="root", description="MySQL用户名", env="MYSQL_USER")
     mysql_password: str = Field(default="your_password", description="MySQL密码", env="MYSQL_PASSWORD")
+
+    # SQLite 配置
+    sqlite_path: Optional[str] = Field(default=None, description="SQLite数据库文件路径(可选)，如 ./data/user.db 或 C:/data/user.db", env="SQLITE_PATH")
     
     # 文件存储配置
     storage_type: str = Field(default="minio", description="存储类型: minio, s3, local", env="STORAGE_TYPE")
@@ -66,10 +69,9 @@ class Settings(BaseSettings):
     s3_access_key_id: str = Field(default="your_access_key", description="S3访问密钥ID", env="S3_ACCESS_KEY_ID")
     s3_secret_access_key: str = Field(default="your_secret_key", description="S3秘密访问密钥", env="S3_SECRET_ACCESS_KEY")
     s3_use_ssl: bool = Field(default=True, description="S3是否使用SSL", env="S3_USE_SSL")
-
     
     # 本地存储配置
-    local_upload_dir: str = Field(default="./uploads", description="本地上传目录", env="LOCAL_UPLOAD_DIR")
+    local_upload_dir: str = Field(default="./data/upload_files", description="本地上传目录", env="LOCAL_UPLOAD_DIR")
     
     # Azure Blob Storage SAS配置
     azure_account_url: str = Field(default="https://yourstorageaccount.blob.core.windows.net", description="Azure存储账户URL", env="AZURE_ACCOUNT_URL")
@@ -137,7 +139,16 @@ class Settings(BaseSettings):
         elif self.database_type.lower() == "mysql":
             return f"mysql+aiomysql://{self.mysql_user}:{self.mysql_password}@{self.mysql_host}:{self.mysql_port}/{self.db_name}"
         else:
-            return "sqlite+aiosqlite:///./koalawiki.db"
+            raw_path = self.sqlite_path
+            if not raw_path:
+                filename = self.db_name if self.db_name.lower().endswith(".db") else f"{self.db_name}.db"
+                raw_path = os.path.join(PROJECT_BASE_DIR, "data", filename)
+            abs_path = os.path.abspath(raw_path)
+            parent_dir = os.path.dirname(abs_path)
+            if parent_dir and not os.path.isdir(parent_dir):
+                os.makedirs(parent_dir, exist_ok=True)
+            norm_path = abs_path.replace("\\", "/")
+            return f"sqlite+aiosqlite:///{norm_path}"
     
     @property
     def redis_url(self) -> str:
@@ -146,6 +157,10 @@ class Settings(BaseSettings):
             return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_db}"
         return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
+    @property
+    def app_name(self) -> str:
+        """应用名称(用于JWT issuer等)"""
+        return APP_NAME
 
 # 全局配置实例
 settings = Settings() 
